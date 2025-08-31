@@ -44,20 +44,6 @@ wget -O main.py "$MAIN_PY_URL"
 log "Downloading requirements.txt..."
 wget -O requirements.txt "$REQS_URL"
 
-# === 3.1 Ask for Telegram token and write to main.py BEFORE service start ===
-read -rp "Введите токен вашего Telegram-бота: " BOT_TOKEN
-if [[ -z "$BOT_TOKEN" ]]; then
-    error "Токен не может быть пустым!"
-    exit 1
-fi
-
-if grep -q '^TOKEN =' main.py; then
-    sed -i "s|^TOKEN =.*|TOKEN = \"$BOT_TOKEN\"|" main.py
-else
-    sed -i "1iTOKEN = \"$BOT_TOKEN\"" main.py
-fi
-log "Токен записан в main.py"
-
 # === 4. Install deps ===
 log "Installing dependencies..."
 pip install -r requirements.txt
