@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+
+INSTALL_DIR="/usr/local/bin/bot"
+
+mkdir -p "$INSTALL_DIR"
+cd "$INSTALL_DIR"
+
+echo "[INFO] === Bot configuration ==="
+read -p "Enter your bot TOKEN: " BOT_TOKEN
+read -p "Enter path to servers folder (MAPS): " MAPS_PATH
+read -p "Enter path to accounts folder (ACC): " ACC_PATH
+echo "Enter the names of server folders (comma separated, e.g. folder1, folder2):"
+read -p "Servers: " SERVERS_FOLDERS
+
+IFS=',' read -r -a SERVERS_ARRAY <<< "$SERVERS_FOLDERS"
+SERVERS_JSON=$(printf '"%s", ' "${SERVERS_ARRAY[@]}")
+SERVERS_JSON="[${SERVERS_JSON%, }]"
+
+cat > config.json <<EOF
+{
+  "TOKEN": "$BOT_TOKEN",
+  "MAPS_FOLDER": "$MAPS_PATH",
+  "ACC_FOLDER": "$ACC_PATH",
+  "servers": $SERVERS_JSON
+}
+EOF
+
+echo "[INFO] Config saved to $INSTALL_DIR/config.json"
+echo "[INFO] You can edit it later manually if needed."

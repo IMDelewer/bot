@@ -7,13 +7,15 @@ from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-TOKEN = "YOUR_BOT_TOKEN"
+import json
 
-MAPS_FOLDER = "/home/atmosphere/ddnet/Universe Block"
+with open("config.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
 
-ACC_FOLDER = ""
-
-servers = []
+TOKEN = config["TOKEN"]
+MAPS_FOLDER = config["MAPS_FOLDER"]
+ACC_FOLDER = config["ACC_FOLDER"]
+servers = config["servers"]
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
