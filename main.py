@@ -137,7 +137,7 @@ async def process_name(message: types.Message, state: FSMContext):
 Смерти: {data["deaths"]}
 Полиция: {data["police_level"]}
 Вип: {data["vip"]}
-Спуки: {data.get("spook_ghost")}
+Спуки: {data.get("spooky_ghost")}
 Поинты: {data.get("block_points")}
 """)
     await state.clear()
