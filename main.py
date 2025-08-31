@@ -129,7 +129,6 @@ async def process_name(message: types.Message, state: FSMContext):
     await state.clear()
 
 async def main():
-    dp.include_router(dp)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
