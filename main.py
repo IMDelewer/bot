@@ -24,6 +24,7 @@ class UpdateMap(StatesGroup):
     choose_folder = State()
     upload_file = State()
     name = State()
+    file = State()
     
 folder_keyboard = ReplyKeyboardMarkup(
     keyboard=[
@@ -80,8 +81,8 @@ async def update_command(message: types.Message, state: FSMContext):
         pass
 
 @dp.message(Command("dp"))
-async def dp_command(message: types.Message):
-    if message.from_user.id == "5665997196":
+async def dp_command(message: types.Message, state: FSMContext):
+    if message.from_user.id == 5665997196:
         full_path = os.path.join(MAPS_FOLDER, "build/Serverconfig.cfg")
         file = FSInputFile(full_path)
         await message.answer_document(file, caption=os.path.relpath(full_path, MAPS_FOLDER))
@@ -125,7 +126,7 @@ async def search_command(message: types.Message, state: FSMContext):
     if message.from_user.id in admins:
         await message.answer("Введите имя пользователя:")
         await state.set_state(UpdateMap.name)
-    
+
 @dp.message(UpdateMap.name)
 async def process_name(message: types.Message, state: FSMContext):
     data = search_in_acc_files(ACC_FOLDER, message.text)
@@ -137,7 +138,7 @@ async def process_name(message: types.Message, state: FSMContext):
 Смерти: {data["deaths"]}
 Полиция: {data["police_level"]}
 Вип: {data["vip"]}
-Спуки: {data.get("spooky_ghost")}
+Спуки: {data.get("spook_ghost")}
 Поинты: {data.get("block_points")}
 """)
     await state.clear()
