@@ -8,9 +8,9 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 TOKEN = ""
-MAPS_FOLDER = "/root/F-DDrace/build"
+MAPS_FOLDER = "/root/F-DDrace/"
 ACC_FOLDER = "/root/F-DDrace/build/data/accounts"
-servers = ["block"]
+servers = ["build"]
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -73,7 +73,7 @@ async def update_command(message: types.Message, state: FSMContext):
 
 @dp.message(Command("dp"))
 async def dp_command(message: types.Message):
-    full_path = os.path.join(MAPS_FOLDER, "autoexec.cfg")
+    full_path = os.path.join(MAPS_FOLDER, "build/autoexec.cfg")
     file = FSInputFile(full_path)
     await message.answer_document(file, caption=os.path.relpath(full_path, MAPS_FOLDER))
         
@@ -115,15 +115,15 @@ async def search_command(message: types.Message, state: FSMContext):
 @dp.message(UpdateMap.name)
 async def process_name(message: types.Message, state: FSMContext):
     data = search_in_acc_files(ACC_FOLDER, message.text)
-    await message.answer(f"""Юзернейм: {data["last_player_name"]}
-Никнейм: {data["last"]}
+    await message.answer(f"""Юзернейм: {data["username"]}
+Никнейм: {data["last_player_name"]}
 Левел: {data["level"]}
 Опыт: {data["xp"]}
 Убийства: {data["kills"]}
 Смерти: {data["deaths"]}
 Полиция: {data["police_level"]}
 Вип: {data["vip"]}
-Спуки: {data.get("spooky")}
+Спуки: {data.get("spook_ghost")}
 Поинты: {data.get("block_points")}
 """)
     await state.clear()
