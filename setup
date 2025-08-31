@@ -3,7 +3,7 @@
 set -e
 
 # === Config ===
-GITHUB_RAW_BASE="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main"
+GITHUB_RAW_BASE="https://raw.githubusercontent.com/imdelewer/bot/main"
 MAIN_PY_URL="$GITHUB_RAW_BASE/main.py"
 REQS_URL="$GITHUB_RAW_BASE/requirements.txt"
 
