@@ -7,15 +7,10 @@ from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-import json
-
-with open("config.json", "r", encoding="utf-8") as f:
-    config = json.load(f)
-
-TOKEN = config["TOKEN"]
-MAPS_FOLDER = config["MAPS_FOLDER"]
-ACC_FOLDER = config["ACC_FOLDER"]
-servers = config["servers"]
+TOKEN = ""
+MAPS_FOLDER = "/root/F-DDrace/build"
+ACC_FOLDER = "/root/F-DDrace/build/data/accounts"
+servers = ["block"]
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -23,6 +18,7 @@ dp = Dispatcher()
 class UpdateMap(StatesGroup):
     choose_folder = State()
     upload_file = State()
+    name = State()
     
 folder_keyboard = ReplyKeyboardMarkup(
     keyboard=[
@@ -32,25 +28,43 @@ folder_keyboard = ReplyKeyboardMarkup(
     one_time_keyboard=True
 )
 
+keys = [
+    "port", "logged_in", "disabled", "password", "username", "client_id",
+    "level", "xp", "money", "kills", "deaths", "police_level", "survival_kills",
+    "survival_wins", "spooky_ghost", "last_money_transaction_0",
+    "last_money_transaction_1", "last_money_transaction_2", "last_money_transaction_3",
+    "last_money_transaction_4", "vip", "block_points", "instagib_kills",
+    "instagib_wins", "spawn_weapon_shotgun", "spawn_weapon_grenade",
+    "spawn_weapon_rifle", "ninjajetpack", "last_player_name", "survival_deaths",
+    "instagib_deaths", "taser_level", "killing_spree_record", "euros",
+    "expire_date_vip", "portal_rifle", "expire_date_portal_rifle", "version",
+    "addr", "last_addr", "taser_battery", "contact", "timeout_code",
+    "security_pin", "register_date", "last_login_date", "flags", "email",
+    "design", "portal_battery", "portal_blocker", "vote_menu_flags",
+    "durak_wins", "durak_profit", "language"
+]
+
 def search_in_acc_files(directory, search_text):
     if not os.path.exists(directory):
         print("Указанная папка не существует.")
-        return
+        return None
     
     for filename in os.listdir(directory):
         if filename.endswith(".acc"):
             file_path = os.path.join(directory, filename)
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
-                    found = False
-                    for line in file:
-                        if search_text in line:
-                            if not found:
-                                print(f"Найдено в файле: {filename}")
-                                found = True
-                            print(f"  -> {line.strip()}")
+                    lines = [line.strip() for line in file if line.strip() != ""]
+                    if any(search_text in line for line in lines):
+                        print(f"Найдено в файле: {filename}")
+                        # Формируем словарь
+                        data = {key: (lines[i] if i < len(lines) else None) for i, key in enumerate(keys)}
+                        return data  # возвращаем словарь для дальнейшего использования
             except Exception as e:
                 print(f"Ошибка при чтении файла {filename}: {e}")
+    
+    print("Совпадений не найдено.")
+    return None
                 
 @dp.message(Command("update"))
 async def update_command(message: types.Message, state: FSMContext):
@@ -59,18 +73,9 @@ async def update_command(message: types.Message, state: FSMContext):
 
 @dp.message(Command("dp"))
 async def dp_command(message: types.Message):
-    target_files = []
-    for root, dirs, files in os.walk(MAPS_FOLDER):
-        for file in files:
-            if file == "autoexec.cfg":
-                full_path = os.path.join(root, file)
-                target_files.append(full_path)
-    if not target_files:
-        await message.reply(":(")
-        return
-    for filepath in target_files:
-        file = FSInputFile(filepath)
-        await message.answer_document(file, caption=os.path.relpath(filepath, MAPS_FOLDER))
+    full_path = os.path.join(MAPS_FOLDER, "autoexec.cfg")
+    file = FSInputFile(full_path)
+    await message.answer_document(file, caption=os.path.relpath(full_path, MAPS_FOLDER))
         
 @dp.message(UpdateMap.choose_folder, F.text.in_(servers))
 async def folder_chosen(message: types.Message, state: FSMContext):
@@ -100,6 +105,27 @@ async def file_received(message: types.Message, state: FSMContext):
     shutil.move(downloaded_file_path, file_path)
 
     await message.answer(f"Файл {file_name} обновлён в {folder}/data/maps/")
+    await state.clear()
+
+@dp.message(Command("search"))
+async def search_command(message: types.Message, state: FSMContext):
+    await message.answer("Введите имя пользователя:")
+    await state.set_state(UpdateMap.name)
+
+@dp.message(UpdateMap.name)
+async def process_name(message: types.Message, state: FSMContext):
+    data = search_in_acc_files(ACC_FOLDER, message.text)
+    await message.answer(f"""Юзернейм: {data["last_player_name"]}
+Никнейм: {data["last"]}
+Левел: {data["level"]}
+Опыт: {data["xp"]}
+Убийства: {data["kills"]}
+Смерти: {data["deaths"]}
+Полиция: {data["police_level"]}
+Вип: {data["vip"]}
+Спуки: {data.get("spooky")}
+Поинты: {data.get("block_points")}
+""")
     await state.clear()
 
 async def main():
