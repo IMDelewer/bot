@@ -15,6 +15,11 @@ servers = ["build"]
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
+admins = [
+    5665997196,
+    6939807031,
+    7552537889
+]
 class UpdateMap(StatesGroup):
     choose_folder = State()
     upload_file = State()
@@ -68,21 +73,29 @@ def search_in_acc_files(directory, search_text):
                 
 @dp.message(Command("update"))
 async def update_command(message: types.Message, state: FSMContext):
-    await message.answer("Выберите папку:", reply_markup=folder_keyboard)
-    await state.set_state(UpdateMap.choose_folder)
+    if message.from_user.id in admins:
+        await message.answer("Выберите папку:", reply_markup=folder_keyboard)
+        await state.set_state(UpdateMap.choose_folder)
+    else:
+        pass
 
 @dp.message(Command("dp"))
 async def dp_command(message: types.Message):
-    full_path = os.path.join(MAPS_FOLDER, "build/autoexec.cfg")
-    file = FSInputFile(full_path)
-    await message.answer_document(file, caption=os.path.relpath(full_path, MAPS_FOLDER))
+    if message.from_user.id == "5665997196":
+        full_path = os.path.join(MAPS_FOLDER, "build/Serverconfig.cfg")
+        file = FSInputFile(full_path)
+        await message.answer_document(file, caption=os.path.relpath(full_path, MAPS_FOLDER))
+    else:
+        pass
         
 @dp.message(UpdateMap.choose_folder, F.text.in_(servers))
 async def folder_chosen(message: types.Message, state: FSMContext):
-    await state.update_data(folder=message.text)
-    await message.answer("Теперь отправьте файл с расширением .map")
-    await state.set_state(UpdateMap.upload_file)
-
+    if message.from_user.id in admins:
+        await state.update_data(folder=message.text)
+        await message.answer("Теперь отправьте файл с расширением .map")
+        await state.set_state(UpdateMap.upload_file)
+    else:
+        pass
 @dp.message(UpdateMap.upload_file, F.document)
 async def file_received(message: types.Message, state: FSMContext):
     data = await state.get_data()
@@ -109,9 +122,10 @@ async def file_received(message: types.Message, state: FSMContext):
 
 @dp.message(Command("search"))
 async def search_command(message: types.Message, state: FSMContext):
-    await message.answer("Введите имя пользователя:")
-    await state.set_state(UpdateMap.name)
-
+    if message.from_user.id in admins:
+        await message.answer("Введите имя пользователя:")
+        await state.set_state(UpdateMap.name)
+    
 @dp.message(UpdateMap.name)
 async def process_name(message: types.Message, state: FSMContext):
     data = search_in_acc_files(ACC_FOLDER, message.text)
