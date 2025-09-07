@@ -22,6 +22,7 @@ admins = [
 class UpdateMap(StatesGroup):
     choose_folder = State()
     upload_file = State()
+    name = State()
     
 folder_keyboard = ReplyKeyboardMarkup(
     keyboard=[
